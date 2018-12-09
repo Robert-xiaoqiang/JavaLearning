@@ -5,7 +5,9 @@ package me.view;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 
+import me.common.event.ColorChangedListener;
 import me.common.notification.IPropertyNotification;
 import me.common.statemachine.QState;
 import me.model.Pages;
@@ -39,12 +41,12 @@ public class MainWindow extends JFrame {
 		createMenuItem();
 		createButton();
 		createFunctionButton();
-		createMainPanel();
+		createPanel();
 		
-		initMainPanel();
+		initPanel();
 		initMenuBar();
 		initToolBar();
-		initFunctionButton();
+		initFunctionArea();
 		
 		// JFrame
 	    setSize(1280, 640);
@@ -68,16 +70,36 @@ public class MainWindow extends JFrame {
 		pages.addPropertyNotification(this.getViewSink());
 	}
 	
-	public void bindRectangleLable(ActionListener aListener)
+	public void bindRectangleButton(ActionListener aListener)
 	{
 		rectangleButton.addActionListener(aListener);
 	}
 	
-	public void bindMainPanel(MouseListener mListener)
+	public <E extends MouseMotionListener & MouseListener> void bindMainPanel(E mListener)
 	{
 		mainPanel.addMouseListener(mListener);
+		mainPanel.addMouseMotionListener(mListener);
 	}
 	
+	public void bindEdgeColorPanel(ColorChangedListener e)
+	{
+		edgeFillColorPanel.addEdgeColorChangeListener(e);
+	}
+	
+	public void bindFillColorPanel(ColorChangedListener f)
+	{
+		edgeFillColorPanel.addFillColorChangedListener(f);
+	}
+	
+	public void bindEdgeButton(ActionListener a)
+	{
+		edgeButton.addActionListener(a);
+	}
+	
+	public void bindFillButton(ActionListener a) 
+	{
+		fillButton.addActionListener(a);
+	}
 	// update
 	public void update()
 	{
@@ -96,21 +118,31 @@ public class MainWindow extends JFrame {
 	private JMenuItem closeMenuItem;
 	private JMenuItem saveMenuItem;
 	private JMenuItem saveAsMenuItem;
-
 	private JMenuBar menuBar;
 	private JMenu fileMenu;
 	private JMenu editMenu;
 	private JMenu optionsMenu;
 	private JMenu helpMenu;
-	
+	// tool bar component
 	private JToolBar toolBar;
 	private JButton openButton;
 	private JButton closeButton;
 	private JButton saveButton;
 	private JButton saveAsButton;
 	
+	// selection button
+	private JRadioButton edgeButton;
+	private JRadioButton fillButton;
+	private ButtonGroup edgeFillGroup; // just new & add is OK
+	
+	// slider
+	private JSlider strokeSlider; 
+	
 	// panel component
 	private QPanel mainPanel;
+	
+	// edge color + fill color
+	private ColorPanel edgeFillColorPanel;
 	
 	// function component
 	private JButton rectangleButton;
@@ -165,19 +197,33 @@ public class MainWindow extends JFrame {
 		add(toolBar, BorderLayout.NORTH);
 	}
 	
-	private void initFunctionButton()
+	private void initFunctionArea()
 	{
-		GridLayout functionLayout = new GridLayout(3, 1);
+		GridLayout functionLayout = new GridLayout(5, 1);
 		JPanel functionPanel = new JPanel();
+		// button
 		functionPanel.setLayout(functionLayout);
 		functionPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 		functionPanel.add(rectangleButton);
 		functionPanel.add(circleButton);
 		functionPanel.add(new JButton("Button"));
+		
+		// color panel
+		functionPanel.add(edgeFillColorPanel);
+		
+		// edge/fill button
+		JPanel edgeFillPanel = new JPanel();
+		edgeFillPanel.setLayout(new GridLayout(1, 2));
+		edgeFillPanel.setBorder(new LineBorder(Color.ORANGE, 5));
+		edgeFillPanel.add(edgeButton);
+		edgeFillPanel.add(fillButton);
+		functionPanel.add(edgeFillPanel);
+		
+		// this
 		add(functionPanel, BorderLayout.EAST);
 	}
-	
-	private void initMainPanel()
+		
+	private void initPanel()
 	{
 		add(mainPanel, BorderLayout.CENTER);
 	}
@@ -196,10 +242,22 @@ public class MainWindow extends JFrame {
 	
 	private void createButton()
 	{
+		// Menu Item
 		openButton = new JButton("Open");
 		closeButton = new JButton("Close");
 		saveButton = new JButton("Save");
-		saveAsButton = new JButton("Save As");		
+		saveAsButton = new JButton("Save As");
+		
+		// edge fill button
+		edgeButton = new JRadioButton("Not Fill", true);
+		// edgeButton.setMnemonic(KeyEvent.VK_E);
+		edgeButton.setActionCommand("EDGE");
+		fillButton = new JRadioButton("Fill");
+		// fillButton.setMnemonic(KeyEvent.VK_F);
+		fillButton.setActionCommand("FILL");
+		edgeFillGroup = new ButtonGroup();
+		edgeFillGroup.add(edgeButton);
+		edgeFillGroup.add(fillButton);
 	}
 	
 	private void createFunctionButton()
@@ -212,9 +270,10 @@ public class MainWindow extends JFrame {
 		circleButton = new JButton("Circle");
 	}
 	
-	private void createMainPanel()
+	private void createPanel()
 	{
 		mainPanel = new QPanel();
+		edgeFillColorPanel = new ColorPanel();
 	}
 	
 }

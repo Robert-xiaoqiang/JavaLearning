@@ -5,13 +5,15 @@ import java.awt.Graphics;
 import java.awt.Point;
 
 public class QRectangle extends AbstractShape {
-	public QRectangle(int x, int y, int width, int height, double stroke, Color edgeColor, Color fillColor) 
+	public QRectangle(int x, int y, int width, int height, double stroke, Color edgeColor, Color fillColor, boolean isFill) 
 	{
 		super(stroke, edgeColor, fillColor);
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
+		this.isFill = isFill;
+		this.p1 = new Point(x, y);
 	}
 
 	@Override
@@ -30,6 +32,26 @@ public class QRectangle extends AbstractShape {
 	public boolean isInner(Point p) 
 	{
 		return p.x > x && p.x < (x + width) && p.y > y && p.y < (y + height);
+	}
+	
+	public int getX()
+	{
+		return x;
+	}
+	
+	public int getY()
+	{
+		return y;
+	}
+	
+	public int getp1X()
+	{
+		return p1.x;
+	}
+	
+	public int getp1Y()
+	{
+		return p1.y;
 	}
 	
 	public void setX(int x)
@@ -51,9 +73,15 @@ public class QRectangle extends AbstractShape {
 	{
 		height = h;
 	}
+	
+	public void setIsFill(boolean isFill)
+	{
+		this.isFill = isFill;
+	}
 	private int x, y;
 	private int width, height;
-	
+	private Point p1 = null;
+	// p1, p2 is dummy, just for caching
 	// default value
 	private boolean isFill = false;
 }

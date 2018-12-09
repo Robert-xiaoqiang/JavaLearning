@@ -5,19 +5,19 @@ public enum QState {
 		@Override
 		public QState leftButton() 
 		{
-			return QSTATE_IDLE;
+			return QState.QSTATE_IDLE;
 		}
 
 		@Override
 		public QState rightButton() 
 		{
-			return QSTATE_IDLE;
+			return QState.QSTATE_IDLE;
 		}
 		
 		@Override
 		public QState rectangleButton()
 		{
-			return QSTATE_RECTANGLE;
+			return QState.QSTATE_RECTANGLE;
 		}
 	},
 	
@@ -25,19 +25,39 @@ public enum QState {
 		@Override
 		public QState leftButton()
 		{
-			return QSTATE_RECTANGLE;
+			return QState.QSTATE_RENDER_RECTANGLE;
 		}
 		
 		@Override
 		public QState rightButton()
 		{
-			return QSTATE_RECTANGLE;
+			return QState.QSTATE_RECTANGLE;
 		}
 		
 		@Override
 		public QState rectangleButton()
 		{
-			return QSTATE_IDLE;
+			return QState.QSTATE_IDLE;
+		}
+	},
+	
+	QSTATE_RENDER_RECTANGLE {
+		@Override
+		public QState leftButton()
+		{
+			return QState.QSTATE_RECTANGLE;
+		}
+		
+		@Override
+		public QState rightButton()
+		{
+			return QState.QSTATE_RECTANGLE;
+		}
+		
+		@Override
+		public QState rectangleButton()
+		{
+			return QState.QSTATE_IDLE;
 		}
 	};
 	

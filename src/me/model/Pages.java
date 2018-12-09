@@ -21,7 +21,7 @@ public class Pages extends ProxyPropertyNotification implements Serializable {
 			}
 		}
 		// notify view level
-		FireOnPropertyChanged("increaseStroke");
+		fireOnPropertyChanged("increaseStroke");
 	}
 	
 	public void decreaseStroke(Point p)
@@ -35,19 +35,18 @@ public class Pages extends ProxyPropertyNotification implements Serializable {
 			}
 		}		
 		// notify view level
-		FireOnPropertyChanged("decreaseStroke");
+		fireOnPropertyChanged("decreaseStroke");
 	}
 	
 	public void add(AbstractShape shape)
 	{
 		shapes.add(shape);
 		// notify view level
-		FireOnPropertyChanged("add");
+		fireOnPropertyChanged("add");
 	}
 	
 	public void render(Graphics g)
 	{
-		System.out.println("here");
 		// how about capturing
 		shapes.forEach((AbstractShape v) -> {
 			v.render(g);
@@ -57,6 +56,13 @@ public class Pages extends ProxyPropertyNotification implements Serializable {
 	public IShape now()
 	{
 		return shapes.get(shapes.size() - 1);
+	}
+	
+	// here protected -> public
+	// intention : elements fire on notification
+	public void requestPropertyChanged(String info)
+	{
+		fireOnPropertyChanged(info);
 	}
 	
 	private ArrayList<AbstractShape> shapes;

@@ -30,8 +30,13 @@ public final class APP {
 		controller.bindModel(pages);
 		
 		// event -> controller
-		window.bindRectangleLable(controller.getRectangleButtonListener());
+		// listener binding
+		window.bindRectangleButton(controller.getRectangleButtonListener());
 		window.bindMainPanel(controller.getMainPanelListener());
+		window.bindEdgeColorPanel(controller.getEdgeColorChangedListener());
+		window.bindFillColorPanel(controller.getFillColorChangedListener());
+		window.bindEdgeButton(controller.getEdgeButtonListener());
+		window.bindFillButton(controller.getFillButtonListener());
 	}
 	
 }

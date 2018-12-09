@@ -13,7 +13,7 @@ public class ProxyPropertyNotification {
 		sinks.add(p);
 	}
 	
-	public void FireOnPropertyChanged(String info)
+	protected void fireOnPropertyChanged(String info)
 	{
 		sinks.forEach((e) -> 
 		{
