@@ -1,8 +1,11 @@
 package me.model;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Stroke;
 
 public class QRectangle extends AbstractShape {
 	public QRectangle(int x, int y, int width, int height, double stroke, Color edgeColor, Color fillColor, boolean isFill) 
@@ -19,6 +22,8 @@ public class QRectangle extends AbstractShape {
 	@Override
 	public void render(Graphics g) 
 	{
+		Graphics2D g2 = (Graphics2D)g;
+		g2.setStroke(new BasicStroke((float)stroke, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
 		g.setColor(edgeColor);
 		g.drawRect(x, y, width, height);
 		if(isFill) {

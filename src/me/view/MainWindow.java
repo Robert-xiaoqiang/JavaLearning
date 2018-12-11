@@ -6,10 +6,12 @@ package me.view;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeListener;
 
 import me.common.event.ColorChangedListener;
 import me.common.notification.IPropertyNotification;
 import me.common.statemachine.QState;
+import me.model.DefaultSetting;
 import me.model.Pages;
 // here is a nested import
 import me.view.sinks.ViewPropertySink;
@@ -22,6 +24,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.OpenType;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 
 /**
@@ -40,7 +43,7 @@ public class MainWindow extends JFrame {
 		// this
 		createMenuItem();
 		createButton();
-		createFunctionButton();
+		createFunctionArea();
 		createPanel();
 		
 		initPanel();
@@ -80,25 +83,30 @@ public class MainWindow extends JFrame {
 		mainPanel.addMouseListener(mListener);
 		mainPanel.addMouseMotionListener(mListener);
 	}
-	
+	// bind color panel
 	public void bindEdgeColorPanel(ColorChangedListener e)
 	{
 		edgeFillColorPanel.addEdgeColorChangeListener(e);
 	}
-	
+	// bind color panel
 	public void bindFillColorPanel(ColorChangedListener f)
 	{
 		edgeFillColorPanel.addFillColorChangedListener(f);
 	}
-	
+	// bind edge button
 	public void bindEdgeButton(ActionListener a)
 	{
 		edgeButton.addActionListener(a);
 	}
-	
+	// bind fill button from controller
 	public void bindFillButton(ActionListener a) 
 	{
 		fillButton.addActionListener(a);
+	}
+	// bind stroke slider
+	public void bindStrokeSlider(ChangeListener c)
+	{
+		strokeSlider.addChangeListener(c);
 	}
 	// update
 	public void update()
@@ -217,7 +225,14 @@ public class MainWindow extends JFrame {
 		edgeFillPanel.setBorder(new LineBorder(Color.ORANGE, 5));
 		edgeFillPanel.add(edgeButton);
 		edgeFillPanel.add(fillButton);
-		functionPanel.add(edgeFillPanel);
+		
+		// edge/fill + stroke slider => panel
+		JPanel leftRightPanel = new JPanel(new GridLayout(1, 2));
+		leftRightPanel.add(strokeSlider);
+		leftRightPanel.add(edgeFillPanel);
+		
+		// function panel
+		functionPanel.add(leftRightPanel);
 		
 		// this
 		add(functionPanel, BorderLayout.EAST);
@@ -247,7 +262,19 @@ public class MainWindow extends JFrame {
 		closeButton = new JButton("Close");
 		saveButton = new JButton("Save");
 		saveAsButton = new JButton("Save As");
+	}
+	
+	private void createFunctionArea()
+	{
+		// button function
+		rectangleButton = new JButton();
+		rectangleButton.setBackground(Color.WHITE);
+		ImageIcon rectIcon = new ImageIcon("resource/rectangle.png"); 
+		rectangleButton.setIcon(rectIcon);
+		// button function
+		circleButton = new JButton("Circle");
 		
+		edgeFillColorPanel = new ColorPanel();
 		// edge fill button
 		edgeButton = new JRadioButton("Not Fill", true);
 		// edgeButton.setMnemonic(KeyEvent.VK_E);
@@ -258,22 +285,27 @@ public class MainWindow extends JFrame {
 		edgeFillGroup = new ButtonGroup();
 		edgeFillGroup.add(edgeButton);
 		edgeFillGroup.add(fillButton);
-	}
-	
-	private void createFunctionButton()
-	{
-		rectangleButton = new JButton();
-		rectangleButton.setBackground(Color.WHITE);
-		ImageIcon rectIcon = new ImageIcon("resource/rectangle.png"); 
-		rectangleButton.setIcon(rectIcon);
 		
-		circleButton = new JButton("Circle");
+		// stroke slider
+		strokeSlider = new JSlider(JSlider.VERTICAL, 
+				 				   (int)DefaultSetting.minStroke, 
+				 				   (int)DefaultSetting.maxStroke,
+				 				   (int)DefaultSetting.stroke);
+		strokeSlider.setMajorTickSpacing(3);
+		strokeSlider.setPaintTicks(true);
+		strokeSlider.setToolTipText("Just Silde It!");
+		
+		Hashtable<Integer, JLabel> strokeSliderHashtable = new Hashtable<>();
+		strokeSliderHashtable.put(1, new JLabel("Thiner"));
+		strokeSliderHashtable.put((int)DefaultSetting.maxStroke / 2, new JLabel("Middle"));
+		strokeSliderHashtable.put((int)DefaultSetting.maxStroke, new JLabel("Thicker"));
+		strokeSlider.setLabelTable(strokeSliderHashtable);
+		strokeSlider.setPaintLabels(true);
 	}
 	
 	private void createPanel()
 	{
 		mainPanel = new QPanel();
-		edgeFillColorPanel = new ColorPanel();
 	}
 	
 }

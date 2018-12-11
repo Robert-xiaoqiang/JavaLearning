@@ -7,6 +7,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import me.common.event.ColorChangedListener;
 import me.common.statemachine.QState;
 import me.model.DefaultSetting;
@@ -143,6 +147,17 @@ public class QController {
 		}
 	}
 	
+	private class StrokeSliderListener implements ChangeListener {
+		@Override
+		public void stateChanged(ChangeEvent c)
+		{
+			JSlider source = (JSlider)c.getSource();
+			if(!source.getValueIsAdjusting()) {
+				stroke = (double)source.getValue();
+			}
+		}
+	}
+	
 	public QController() 
 	{
 		current = null;
@@ -191,6 +206,11 @@ public class QController {
 	public ActionListener getFillButtonListener()
 	{
 		return new FillButtonListener();
+	}
+	
+	public ChangeListener getStrokeSliderListener()
+	{
+		return new StrokeSliderListener();
 	}
 	
 	private QState current = null;

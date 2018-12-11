@@ -37,6 +37,7 @@ public final class APP {
 		window.bindFillColorPanel(controller.getFillColorChangedListener());
 		window.bindEdgeButton(controller.getEdgeButtonListener());
 		window.bindFillButton(controller.getFillButtonListener());
+		window.bindStrokeSlider(controller.getStrokeSliderListener());
 	}
 	
 }
