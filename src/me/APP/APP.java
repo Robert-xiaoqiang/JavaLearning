@@ -5,13 +5,14 @@ import me.view.*;
 import me.control.*;
 import me.common.*;
 import me.common.statemachine.QState;
+import me.common.statemachine.QStateMachine;
 
 public final class APP {
 
 	public APP() 
 	{
 		//statemachine.QState
-		QState automata = QState.QSTATE_IDLE;
+		QStateMachine automata = QStateMachine.createMachineInstance(QState.QSTATE_IDLE); 
 		
 		// serialization model 
 		Pages pages = new Pages();

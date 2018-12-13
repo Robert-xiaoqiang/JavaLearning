@@ -13,6 +13,7 @@ import javax.swing.event.ChangeListener;
 
 import me.common.event.ColorChangedListener;
 import me.common.statemachine.QState;
+import me.common.statemachine.QStateMachine;
 import me.model.DefaultSetting;
 import me.model.Pages;
 import me.model.QRectangle;
@@ -24,8 +25,11 @@ public class QController {
 		public void actionPerformed(ActionEvent e) 
 		{		
 			// OTHERS <-> QSTATE_RECTANGLE
-			current = current.rectangleButton();
+			current.setCurrent(current.getCurrent().rectangleButton());
 			
+			// JComonent repaint
+			// control <-select-> view
+			pages.requestPropertyChanged("QRectangle");
 		}
 		
 	}
@@ -38,7 +42,7 @@ public class QController {
 			// action
 			// override equals() is not necessary
 			if(b == MouseEvent.BUTTON1) {
-				if(current == QState.QSTATE_RECTANGLE) {
+				if(current.getCurrent() == QState.QSTATE_RECTANGLE) {
 					pages.add(new QRectangle(e.getX(), e.getY(), 
 											 0, 0, stroke,
 											 edgeColor, fillColor,
@@ -48,9 +52,9 @@ public class QController {
 			
 			// state transition
 			if(b == MouseEvent.BUTTON1) {
-				current = current.leftButton();
+				current.setCurrent(current.getCurrent().leftButton());
 			} else if(b == MouseEvent.BUTTON3) {
-				current = current.rightButton();
+				current.setCurrent(current.getCurrent().rightButton());
 			}
 		}
 		
@@ -88,7 +92,7 @@ public class QController {
 		public void mouseMoved(MouseEvent e) 
 		{			
 			// action
-			if(current == QState.QSTATE_RENDER_RECTANGLE) {
+			if(current.getCurrent() == QState.QSTATE_RENDER_RECTANGLE) {
 				// make sure up-cast safe
 				QRectangle top = (QRectangle)pages.now();
 				int newX = e.getX(), newY = e.getY();
@@ -113,7 +117,6 @@ public class QController {
 		public void onColorChanged(Color c)
 		{
 			edgeColor = c;
-			System.err.println("onColorChanged");
 		}
 	}
 	
@@ -129,7 +132,7 @@ public class QController {
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			if(e.getActionCommand().intern() == "EDGE") {
+			if(e.getActionCommand().equals("EDGE")) {
 				isFill = false;
 			}
 		}
@@ -141,7 +144,7 @@ public class QController {
 		{
 			// dependent of construction
 			// hahahahahahahahahahahahaha
-			if(e.getActionCommand().intern() == "FILL") {
+			if(e.getActionCommand().equals("FILL")) {
 				isFill = true;
 			}
 		}
@@ -171,7 +174,7 @@ public class QController {
 		this.pages = pages;
 	}
 
-	public void bindStateMachine(QState current)
+	public void bindStateMachine(QStateMachine current)
 	{
 		this.current = current;
 	}
@@ -213,7 +216,7 @@ public class QController {
 		return new StrokeSliderListener();
 	}
 	
-	private QState current = null;
+	private QStateMachine current = null;
 	private Pages pages = null;
 	private Color edgeColor = null;
 	private Color fillColor = null;
