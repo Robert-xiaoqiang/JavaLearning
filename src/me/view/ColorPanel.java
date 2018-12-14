@@ -81,7 +81,7 @@ class ColorPanel extends JPanel {
 	private void initButton()
 	{
 		JPanel edgePanel = new JPanel();
-		edgePanel.setLayout(new GridLayout(3, 3));
+		edgePanel.setLayout(new GridLayout(3, 3, 2, 2));
 		edgePanel.setBorder(new TitledBorder("Edge Color"));
 		edgePanel.add(redEdgeButton);
 		edgePanel.add(greenEdgeButton);
@@ -94,7 +94,7 @@ class ColorPanel extends JPanel {
 		edgePanel.add(magentaEdgeButton);
 		
 		JPanel fillPanel = new JPanel();
-		fillPanel.setLayout(new GridLayout(3, 3));
+		fillPanel.setLayout(new GridLayout(3, 3, 2, 2));
 		fillPanel.setBorder(new TitledBorder("Fill Color"));
 		fillPanel.add(redFillButton);
 		fillPanel.add(greenFillButton);

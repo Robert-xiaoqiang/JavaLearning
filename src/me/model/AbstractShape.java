@@ -1,9 +1,17 @@
 package me.model;
 
 import java.awt.Color;
+import java.io.Serializable;
 
 // default friendly privilege
-abstract class AbstractShape implements IShape {
+public abstract class AbstractShape implements IShape, Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public abstract void translate(int deltaX, int deltaY);
+	
 	public AbstractShape(double stroke, Color edgeColor, Color fillColor) 
 	{
 		this.stroke = stroke;
@@ -11,7 +19,6 @@ abstract class AbstractShape implements IShape {
 		this.fillColor = fillColor;
 	}
 
-	
 	public void setStroke(double d)
 	{
 		stroke = d;
@@ -29,11 +36,16 @@ abstract class AbstractShape implements IShape {
 	
 	public void setFillColor(Color c)
 	{
-		edgeColor = c;
+		fillColor = c;
 	}
 
+	public void setIsFill(boolean isFill)
+	{
+		this.isFill = isFill;
+	}
 	
 	protected double stroke = DefaultSetting.stroke;
 	protected Color edgeColor = DefaultSetting.edgeColor;
 	protected Color fillColor = DefaultSetting.fillColor;
+	protected boolean isFill = false;
 }

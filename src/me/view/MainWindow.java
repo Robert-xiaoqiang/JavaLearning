@@ -20,12 +20,19 @@ import me.view.sinks.ViewPropertySink;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.OpenType;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.LinkedList;
 
 
 /**
@@ -47,6 +54,8 @@ public class MainWindow extends JFrame {
 		createMenuItem();
 		createButton();
 		createPanel();
+		// file operations
+		createFileOperation();
 		
 		initPanel();
 		initMenuBar();
@@ -67,13 +76,13 @@ public class MainWindow extends JFrame {
 		this.current = current;
 		// function panel
 		// select view according to state
-		functionPanel.bindStateMachine(current);
+		functionPanel.bindStateMachine(this.current);
 	}
 	
-	public void bindModel(Pages pages)
+	public void bindModel(LinkedList<Pages> model)
 	{
-		this.pages = pages;
-		mainPanel.bindModel(this.pages);
+		this.model = model;
+		mainPanel.bindModel(this.model);
 		
 		// bind sinks and notification
 		pages.addPropertyNotification(this.getViewSink());
@@ -114,6 +123,22 @@ public class MainWindow extends JFrame {
 	{
 		functionPanel.bindStrokeSlider(c);
 	}
+	// bind menu item
+	public void bindDelete(ActionListener a)
+	{
+		deleteMenuItem.addActionListener(a);
+	}
+	
+	public void bindOpen(ActionListener a)
+	{
+		openMenuItem.addActionListener(a);
+	}	
+	
+	public void bindSave(ActionListener a)
+	{
+		saveMenuItem.addActionListener(a);
+	}
+	
 	// update
 	public void update()
 	{
@@ -129,10 +154,15 @@ public class MainWindow extends JFrame {
 	}
 	
 	// menu component
+	// file
 	private JMenuItem openMenuItem;
 	private JMenuItem closeMenuItem;
 	private JMenuItem saveMenuItem;
 	private JMenuItem saveAsMenuItem;
+	// edit
+	private JMenuItem deleteMenuItem;
+	private JMenuItem duplicateMenuItem;
+	
 	private JMenuBar menuBar;
 	private JMenu fileMenu;
 	private JMenu editMenu;
@@ -149,7 +179,7 @@ public class MainWindow extends JFrame {
 	private QStateMachine current;
 	
 	// model information
-	private Pages pages;
+	private LinkedList<Pages> model; 
 	
 	// panel component
 	private QMainPanel mainPanel;
@@ -160,20 +190,28 @@ public class MainWindow extends JFrame {
 	// sinks
 	private ViewPropertySink viewSink = null;
 	
+	// file operations
+	private JFileChooser fc = null;
+	private String fileName = null;
 	/**
 	 * 
 	 */
 	private void initMenuBar()
 	{
+		// file
 		fileMenu = new JMenu("File"); // no tear
 		fileMenu.add(openMenuItem);
 		fileMenu.add(closeMenuItem);
 		fileMenu.add(saveMenuItem);
 		fileMenu.add(saveAsMenuItem);
 		
+		// edit
 		editMenu = new JMenu("Edit"); // how about torn off
-		optionsMenu = new JMenu("Menu");
-		helpMenu = new JMenu("help");
+		editMenu.add(deleteMenuItem);
+		editMenu.add(duplicateMenuItem);
+		
+		optionsMenu = new JMenu("Option");
+		helpMenu = new JMenu("Help");
 		
 		// menu bar
 		menuBar = new JMenuBar();
@@ -181,7 +219,6 @@ public class MainWindow extends JFrame {
 		menuBar.add(editMenu);
 		menuBar.add(optionsMenu);
 		menuBar.add(helpMenu);
-		//menuBar.add(editMenu);
 		
 		// this
 		setJMenuBar(menuBar);
@@ -212,8 +249,13 @@ public class MainWindow extends JFrame {
 		openMenuItem = new JMenuItem("Open", KeyEvent.VK_O);
 		closeMenuItem = new JMenuItem("Close", KeyEvent.VK_C);
 		saveMenuItem = new JMenuItem("Save", KeyEvent.VK_S);
+		saveMenuItem.addActionListener((a) -> saveAsFile());
 		saveAsMenuItem = new JMenuItem("Save As", KeyEvent.VK_V);
+		saveAsMenuItem.addActionListener((a) -> saveAsFile());
 		// edit
+		deleteMenuItem = new JMenuItem("Delete", KeyEvent.VK_BACK_SPACE);
+		deleteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0));
+		duplicateMenuItem = new JMenuItem("Duplicate", KeyEvent.VK_D);
 		// options
 		// help
 	}
@@ -230,7 +272,84 @@ public class MainWindow extends JFrame {
 	private void createPanel()
 	{
 		mainPanel = new QMainPanel();
+		// mainPanel.setFocusable(true);
 		functionPanel = new QFunctionPanel();
 	}
 	
+	private void createFileOperation()
+	{
+		fileName = "untitled";
+		fc = new JFileChooser("./");
+	}
+	
+	// file operations
+	private void open()
+	{
+		
+	}
+	
+	private void close()
+	{
+		
+	}
+	/**
+	 * @return
+	 * else => false
+	 * yes && save successfully => true
+	 */
+	private boolean okToContinue()
+	{
+		boolean ret = true;
+		// fileName (untitled or others)
+		if(pages.modelIsModified()) {
+			ret = false;
+			Object[] options = {"Yes, please", "No way!"};
+			int n = JOptionPane.showOptionDialog(this, 	      // parent
+											     "Would you like save your changes?",
+												 "Unsaved File",
+												 JOptionPane.YES_NO_OPTION,
+												 JOptionPane.QUESTION_MESSAGE,
+												 null,        // do not use a custom Icon
+												 options,     // the titles of buttons
+												 options[0]); // default button title
+			if(n == JOptionPane.YES_OPTION) {
+				ret = saveFile();
+			}
+		}
+		return ret;
+	}
+	
+	
+	private boolean saveFile()
+	{
+		// fileName must be set before here
+		boolean ret = true;
+		if(fileName.isEmpty()) ret = false; 
+		try(ObjectOutputStream oos = new ObjectOutputStream(
+				 new BufferedOutputStream(
+				 new FileOutputStream(fileName)));) {
+			oos.writeObject(pages);
+		} catch(IOException e) {
+			e.printStackTrace();
+			ret = false;
+		}
+		// AutoCloseable implements
+		
+		return ret;
+	}
+	
+	private boolean saveAsFile()
+	{
+		if(fileName.equals("untitled")) {
+			int returnVal = fc.showOpenDialog(this);
+			 
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                fileName = file.getName();
+            }          
+		} 
+			
+		return saveFile();
+		
+	}
 }

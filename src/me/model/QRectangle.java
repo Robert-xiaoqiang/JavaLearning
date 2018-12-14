@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
+import java.io.Serializable;
 
 public class QRectangle extends AbstractShape {
 	public QRectangle(int x, int y, int width, int height, double stroke, Color edgeColor, Color fillColor, boolean isFill) 
@@ -36,7 +37,15 @@ public class QRectangle extends AbstractShape {
 	@Override
 	public boolean isInner(Point p) 
 	{
-		return p.x > x && p.x < (x + width) && p.y > y && p.y < (y + height);
+		return p.x >= x && p.x <= (x + width) && p.y >= y && p.y <= (y + height);
+	}
+	
+	// for AbstractShape class
+	@Override
+	public void translate(int deltaX, int deltaY)
+	{
+		x += deltaX;
+		y += deltaY;
 	}
 	
 	public int getX()
@@ -88,5 +97,4 @@ public class QRectangle extends AbstractShape {
 	private Point p1 = null;
 	// p1, p2 is dummy, just for caching
 	// default value
-	private boolean isFill = false;
 }
