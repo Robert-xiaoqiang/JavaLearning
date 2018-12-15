@@ -8,6 +8,8 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeListener;
 
+import com.sun.java.swing.plaf.windows.resources.windows;
+
 import me.common.event.ColorChangedListener;
 import me.common.notification.IPropertyNotification;
 import me.common.statemachine.QState;
@@ -25,10 +27,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.OpenType;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -82,10 +87,12 @@ public class MainWindow extends JFrame {
 	public void bindModel(LinkedList<Pages> model)
 	{
 		this.model = model;
-		mainPanel.bindModel(this.model);
+		Pages curPages = this.model.getLast();
 		
+		// dynamic update in new/open/close
+		mainPanel.bindModel(curPages);		
 		// bind sinks and notification
-		pages.addPropertyNotification(this.getViewSink());
+		curPages.addPropertyNotification(this.getViewSink());
 	}
 	
 	public void bindRectangleButton(ActionListener aListener)
@@ -155,6 +162,7 @@ public class MainWindow extends JFrame {
 	
 	// menu component
 	// file
+	private JMenuItem newMenuItem;
 	private JMenuItem openMenuItem;
 	private JMenuItem closeMenuItem;
 	private JMenuItem saveMenuItem;
@@ -246,12 +254,16 @@ public class MainWindow extends JFrame {
 	private void createMenuItem()
 	{
 		// file
+		newMenuItem = new JMenuItem("New", KeyEvent.VK_N);
+		newMenuItem.addActionListener(a -> newFile());
 		openMenuItem = new JMenuItem("Open", KeyEvent.VK_O);
+		openMenuItem.addActionListener(a -> openFile());
 		closeMenuItem = new JMenuItem("Close", KeyEvent.VK_C);
+		closeMenuItem.addActionListener(a -> closeFile());
 		saveMenuItem = new JMenuItem("Save", KeyEvent.VK_S);
-		saveMenuItem.addActionListener((a) -> saveAsFile());
+		saveMenuItem.addActionListener(a -> saveAsFile());
 		saveAsMenuItem = new JMenuItem("Save As", KeyEvent.VK_V);
-		saveAsMenuItem.addActionListener((a) -> saveAsFile());
+		saveAsMenuItem.addActionListener(a -> saveAsFile());
 		// edit
 		deleteMenuItem = new JMenuItem("Delete", KeyEvent.VK_BACK_SPACE);
 		deleteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0));
@@ -282,15 +294,62 @@ public class MainWindow extends JFrame {
 		fc = new JFileChooser("./");
 	}
 	
-	// file operations
-	private void open()
+	private void newFile()
 	{
-		
+		if(okToContinue()) {
+			fileName = "untitled";
+			setCurrent(new Pages()); // must be unmodified
+		}
 	}
 	
-	private void close()
+	// file operations
+	private void openFile()
 	{
+		if(okToContinue()) {
+			int returnVal = fc.showOpenDialog(this);
+			 
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                fileName = file.getName(); // must be unmodified
+                if(!fileName.isEmpty()) {
+                	try(ObjectInputStream ois = new ObjectInputStream(
+                			new BufferedInputStream(
+                			new FileInputStream(fileName)));) {
+                		Pages curPages = (Pages)ois.readObject();
+                		setCurrent(curPages);
+                	} catch(IOException ioe) {
+                		ioe.printStackTrace();
+                	} catch(ClassNotFoundException cnfe) {
+                		cnfe.printStackTrace();
+                	}
+                } else {
+                	// open failed
+                	// format failed
+                	// file name failed
+                }
+            } 
+		}
+	}
+	
+	private void setCurrent(Pages curPages)
+	{
+		// dynamic update in open/close
+		mainPanel.bindModel(curPages);		
+		// bind sinks and notification
+		curPages.addPropertyNotification(this.getViewSink());
+		// last pages => rubbish
+		model.pop();
+		model.push(curPages);
 		
+		// new/open 
+		// repaint model
+		// necessary
+		this.update();
+	}
+	
+	private void closeFile()
+	{
+		newFile();
 	}
 	/**
 	 * @return
@@ -300,8 +359,9 @@ public class MainWindow extends JFrame {
 	private boolean okToContinue()
 	{
 		boolean ret = true;
+		Pages curPages = model.getLast();
 		// fileName (untitled or others)
-		if(pages.modelIsModified()) {
+		if(curPages.modelIsModified()) {
 			ret = false;
 			Object[] options = {"Yes, please", "No way!"};
 			int n = JOptionPane.showOptionDialog(this, 	      // parent
@@ -324,11 +384,13 @@ public class MainWindow extends JFrame {
 	{
 		// fileName must be set before here
 		boolean ret = true;
+		Pages curPages = model.getLast();
 		if(fileName.isEmpty()) ret = false; 
 		try(ObjectOutputStream oos = new ObjectOutputStream(
 				 new BufferedOutputStream(
 				 new FileOutputStream(fileName)));) {
-			oos.writeObject(pages);
+			oos.writeObject(curPages);
+			curPages.setIsModified(false);
 		} catch(IOException e) {
 			e.printStackTrace();
 			ret = false;
@@ -341,7 +403,7 @@ public class MainWindow extends JFrame {
 	private boolean saveAsFile()
 	{
 		if(fileName.equals("untitled")) {
-			int returnVal = fc.showOpenDialog(this);
+			int returnVal = fc.showSaveDialog(this);
 			 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();

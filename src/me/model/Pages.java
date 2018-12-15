@@ -146,6 +146,11 @@ public class Pages extends ProxyPropertyNotification implements Serializable {
 		return isModified;
 	}
 	
+	public void setIsModified(boolean isModified)
+	{
+		this.isModified = isModified;
+	}
+	
 	// to-be saved
 	private ArrayList<AbstractShape> shapes;
 	// not-be saved
