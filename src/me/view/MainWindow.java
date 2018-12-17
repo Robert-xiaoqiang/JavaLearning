@@ -8,8 +8,6 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeListener;
 
-import com.sun.java.swing.plaf.windows.resources.windows;
-
 import me.common.event.ColorChangedListener;
 import me.common.notification.IPropertyNotification;
 import me.common.statemachine.QState;
@@ -100,6 +98,11 @@ public class MainWindow extends JFrame {
 		functionPanel.bindRectangleButton(aListener);
 	}
 	
+	public void bindTextButton(ActionListener aListener)
+	{
+		functionPanel.bindTextButton(aListener);
+	}
+	
 	public <E extends MouseMotionListener & MouseListener> void bindMainPanel(E mListener)
 	{
 		mainPanel.addMouseListener(mListener);
@@ -130,6 +133,12 @@ public class MainWindow extends JFrame {
 	{
 		functionPanel.bindStrokeSlider(c);
 	}
+	// bind size(font size) slider
+	public void bindFontSizeSlider(ChangeListener c)
+	{
+		functionPanel.bindFontSizeSlider(c);
+	}
+	
 	// bind menu item
 	public void bindDelete(ActionListener a)
 	{
@@ -208,6 +217,7 @@ public class MainWindow extends JFrame {
 	{
 		// file
 		fileMenu = new JMenu("File"); // no tear
+		fileMenu.add(newMenuItem);
 		fileMenu.add(openMenuItem);
 		fileMenu.add(closeMenuItem);
 		fileMenu.add(saveMenuItem);
@@ -373,19 +383,31 @@ public class MainWindow extends JFrame {
 												 options,     // the titles of buttons
 												 options[0]); // default button title
 			if(n == JOptionPane.YES_OPTION) {
-				ret = saveFile();
+				// save
+				ret = saveAsFile();
+			} else if(n == JOptionPane.NO_OPTION) {
+				// do not save
+				ret = true;
 			}
+			// else cancel => false
 		}
 		return ret;
 	}
 	
-	
+	/*
+	 * never call it directly
+	 * call saveAsFile() instead
+	 */	
 	private boolean saveFile()
 	{
 		// fileName must be set before here
 		boolean ret = true;
 		Pages curPages = model.getLast();
-		if(fileName.isEmpty()) ret = false; 
+		/*
+		 * here for open/save dialog error
+		 * actually dummy
+		 */
+		if(fileName.isEmpty()) ret = false;
 		try(ObjectOutputStream oos = new ObjectOutputStream(
 				 new BufferedOutputStream(
 				 new FileOutputStream(fileName)));) {

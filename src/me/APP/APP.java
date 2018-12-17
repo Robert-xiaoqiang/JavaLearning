@@ -37,12 +37,14 @@ public final class APP {
 		// event -> controller
 		// listener binding
 		window.bindRectangleButton(controller.getRectangleButtonListener());
+		window.bindTextButton(controller.getTextButtonListener());
 		window.bindMainPanel(controller.getMainPanelListener());
 		window.bindEdgeColorPanel(controller.getEdgeColorChangedListener());
 		window.bindFillColorPanel(controller.getFillColorChangedListener());
 		window.bindEdgeButton(controller.getEdgeButtonListener());
 		window.bindFillButton(controller.getFillButtonListener());
 		window.bindStrokeSlider(controller.getStrokeSliderListener());
+		window.bindFontSizeSlider(controller.getFontSizeSliderListener());
 		window.bindDelete(controller.getDeleteListener());
 	}
 	

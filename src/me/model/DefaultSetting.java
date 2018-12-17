@@ -8,5 +8,9 @@ public interface DefaultSetting {
 	public final static Color fillColor = Color.WHITE;
 	public final static double maxStroke = 20.0;
 	public final static double minStroke = 1.0;
+	
+	public final static int fontSize = 10;
+	public final static int maxFontSize = 100;
+	public final static int minFontSize = 10;
 	// isFill not listed above
 }

@@ -9,9 +9,13 @@ import java.awt.Stroke;
 import java.io.Serializable;
 
 public class QRectangle extends AbstractShape {
-	public QRectangle(int x, int y, int width, int height, double stroke, Color edgeColor, Color fillColor, boolean isFill) 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public QRectangle(int x, int y, int width, int height, double stroke, int size, Color edgeColor, Color fillColor, boolean isFill) 
 	{
-		super(stroke, edgeColor, fillColor);
+		super(stroke, size, edgeColor, fillColor);
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -23,8 +27,7 @@ public class QRectangle extends AbstractShape {
 	@Override
 	public void render(Graphics g) 
 	{
-		Graphics2D g2 = (Graphics2D)g;
-		g2.setStroke(new BasicStroke((float)stroke, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
+		super.render(g);
 		g.setColor(edgeColor);
 		g.drawRect(x, y, width, height);
 		if(isFill) {
@@ -78,6 +81,15 @@ public class QRectangle extends AbstractShape {
 		this.y = y;
 	}
 	
+	@Override
+	public void setSize(int size)
+	{
+		int originSize = this.size;
+		super.setSize(size);
+		width += (size - originSize);
+		height += (size - originSize);
+	}
+	
 	public void setWidth(int w)
 	{
 		width = w;
@@ -94,7 +106,7 @@ public class QRectangle extends AbstractShape {
 	}
 	private int x, y;
 	private int width, height;
-	private Point p1 = null;
+	private transient Point p1 = null;
 	// p1, p2 is dummy, just for caching
 	// default value
 }

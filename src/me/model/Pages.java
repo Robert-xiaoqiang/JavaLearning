@@ -58,6 +58,18 @@ public class Pages extends ProxyPropertyNotification implements Serializable {
 		isModified = true;
 	}
 	
+	/**
+	 * @param
+	 * for font size => size
+	 * for others => ratio amplify/diminish
+	 */
+	public void updateSize(int index, int param)
+	{
+		shapes.get(index).setSize(param);
+		fireOnPropertyChanged("size");
+		isModified = true;
+	}
+	
 	public void updateEdgeColor(int index, Color c)
 	{
 		shapes.get(index).setEdgeColor(c);

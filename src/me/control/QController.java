@@ -17,6 +17,7 @@ import java.util.LinkedList;
 
 import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -28,6 +29,7 @@ import me.model.AbstractShape;
 import me.model.DefaultSetting;
 import me.model.Pages;
 import me.model.QRectangle;
+import me.model.QText;
 
 public class QController {	
 	private class RectangleButtonListener implements ActionListener {
@@ -47,7 +49,21 @@ public class QController {
 		}
 		
 	}
-	
+	private class TextButtonListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) 
+		{
+			hits.clear();
+			current.setCurrent(current.getCurrent().textButton());
+			
+			// JComonent repaint
+			// control <-select-> view
+			Pages pages = model.getLast();
+			pages.requestPropertyChanged("QText");
+		}
+		
+	}
 	private class MainPanelListener implements MouseListener, 
 											   MouseMotionListener {
 		@Override
@@ -69,9 +85,15 @@ public class QController {
 			} else if(cur == QState.QSTATE_RECTANGLE) {
 				if(b == MouseEvent.BUTTON1) {
 					pages.add(new QRectangle(e.getX(), e.getY(), 
-							 0, 0, stroke,
+							 0, 0, stroke, size,
 							 edgeColor, fillColor,
 							 isFill));					
+				}
+			} else if(cur == QState.QSTATE_TEXT) {
+				if(b == MouseEvent.BUTTON1) {
+					String text = JOptionPane.showInputDialog("What about this?");
+					if(text != null && !text.isEmpty())
+						pages.add(new QText(e.getX(), e.getY(), text, b, size, edgeColor, fillColor));
 				}
 			}
 	
@@ -118,7 +140,7 @@ public class QController {
 			if(cur == QState.QSTATE_IDLE && !hits.isEmpty()) {
 				int deltaX = e.getX() - mousePoint.x;
 				int deltaY = e.getY() - mousePoint.y;
-				pages.translate(0, deltaX, deltaY);				
+				pages.translate(hits.get(0), deltaX, deltaY);				
 			}
 			mousePoint.x = e.getX();
 			mousePoint.y = e.getY();
@@ -236,6 +258,25 @@ public class QController {
 		}
 	}
 	
+	private class FontSizeSliderListener implements ChangeListener {
+		@Override
+		public void stateChanged(ChangeEvent c)
+		{
+			JSlider source = (JSlider)c.getSource();
+			// set font size
+			size = source.getValue();
+			
+			QState cur = current.getCurrent();
+			Pages pages = model.getLast();
+			// update hits shape attributes
+			if(cur == QState.QSTATE_IDLE && !hits.isEmpty()) {
+				// font size
+				// shape size also
+				pages.updateSize(hits.get(0), size);
+			}
+		}
+	}
+	
 	private class DeleteListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e)
@@ -255,6 +296,8 @@ public class QController {
 		model = null;
 		edgeColor = DefaultSetting.edgeColor;
 		fillColor = DefaultSetting.fillColor;	
+		
+		size = DefaultSetting.fontSize;
 		
 		// buffer
 		hits = new LinkedList<>();
@@ -276,6 +319,11 @@ public class QController {
 	public ActionListener getRectangleButtonListener()
 	{
 		return new RectangleButtonListener();
+	}
+	
+	public ActionListener getTextButtonListener()
+	{
+		return new TextButtonListener();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -310,6 +358,11 @@ public class QController {
 		return new StrokeSliderListener();
 	}
 	
+	public ChangeListener getFontSizeSliderListener()
+	{
+		return new FontSizeSliderListener();
+	}
+	
 	public ActionListener getDeleteListener()
 	{
 		return new DeleteListener();
@@ -321,6 +374,8 @@ public class QController {
 	private LinkedList<Pages> model; 
 	private Color edgeColor = null;
 	private Color fillColor = null;
+	
+	private int size;
 	private double stroke = 0.0;
 	private boolean isFill = false;
 	
