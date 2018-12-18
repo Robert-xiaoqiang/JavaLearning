@@ -82,6 +82,17 @@ public class QController {
 					java.util.List<Integer> la = pages.getHits(new Point(e.getX(), e.getY()));
 					hits.addAll(la);
 				}
+				/**
+				 * double click to change
+				 * text information
+				 */
+				if(e.getClickCount() == 2) {
+					java.util.List<Integer> la = pages.getHits(new Point(e.getX(), e.getY()));
+					String text = JOptionPane.showInputDialog("Would You Like Change it?");
+					if(text != null && !text.isEmpty()) {
+						pages.updateText(la.get(0), text);
+					}
+				}
 			} else if(cur == QState.QSTATE_RECTANGLE) {
 				if(b == MouseEvent.BUTTON1) {
 					pages.add(new QRectangle(e.getX(), e.getY(), 

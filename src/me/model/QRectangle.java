@@ -51,6 +51,15 @@ public class QRectangle extends AbstractShape {
 		y += deltaY;
 	}
 	
+	@Override
+	public void setSize(int size)
+	{
+		int originSize = this.size;
+		super.setSize(size);
+		width += (size - originSize);
+		height += (size - originSize);
+	}
+	
 	public int getX()
 	{
 		return x;
@@ -80,16 +89,7 @@ public class QRectangle extends AbstractShape {
 	{
 		this.y = y;
 	}
-	
-	@Override
-	public void setSize(int size)
-	{
-		int originSize = this.size;
-		super.setSize(size);
-		width += (size - originSize);
-		height += (size - originSize);
-	}
-	
+		
 	public void setWidth(int w)
 	{
 		width = w;
@@ -100,10 +100,6 @@ public class QRectangle extends AbstractShape {
 		height = h;
 	}
 	
-	public void setIsFill(boolean isFill)
-	{
-		this.isFill = isFill;
-	}
 	private int x, y;
 	private int width, height;
 	private transient Point p1 = null;

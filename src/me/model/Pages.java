@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -70,6 +72,15 @@ public class Pages extends ProxyPropertyNotification implements Serializable {
 		isModified = true;
 	}
 	
+	public void updateText(int index, String text)
+	{
+		if(shapes.get(index) instanceof QText) {
+			((QText)shapes.get(index)).setText(text);
+			fireOnPropertyChanged("edge color");
+			isModified = true;
+		}
+	}
+	
 	public void updateEdgeColor(int index, Color c)
 	{
 		shapes.get(index).setEdgeColor(c);
@@ -129,6 +140,22 @@ public class Pages extends ProxyPropertyNotification implements Serializable {
 						.filter(i -> shapes.get(i).isInner(p))
 						.boxed()
 						.collect(Collectors.toList());				
+	}
+	
+	public java.util.List<QText> getHitsText(Point p)
+	{
+		/**
+		 * here just a down-cast
+		 * Is it a good design?
+		 */
+		 java.util.List<Integer> list = IntStream.range(0, shapes.size())
+				  					   .filter(i -> shapes.get(i) instanceof QText && shapes.get(i).isInner(p))
+				  					   .boxed()
+				  					   .collect(Collectors.toList());
+		 java.util.List<QText> ret = new ArrayList<>();
+		 list.forEach(i -> ret.add((QText)shapes.get(i)));
+		 
+		 return ret;
 	}
 	
 	// dynamic dispatch by state machine
