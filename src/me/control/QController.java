@@ -2,6 +2,7 @@ package me.control;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -13,7 +14,10 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.JFileChooser;
@@ -28,6 +32,10 @@ import me.common.statemachine.QStateMachine;
 import me.model.AbstractShape;
 import me.model.DefaultSetting;
 import me.model.Pages;
+import me.model.QEllipse;
+import me.model.QLine;
+import me.model.QPolygon;
+import me.model.QPolyline;
 import me.model.QRectangle;
 import me.model.QText;
 
@@ -49,6 +57,23 @@ public class QController {
 		}
 		
 	}
+	
+	private class EllipseButtonListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) 
+		{
+			hits.clear();
+			current.setCurrent(current.getCurrent().ellipseButton());
+			
+			// JComonent repaint
+			// control <-select-> view
+			Pages pages = model.getLast();
+			pages.requestPropertyChanged("QEllipse");
+		}
+		
+	}
+	
 	private class TextButtonListener implements ActionListener {
 
 		@Override
@@ -64,6 +89,55 @@ public class QController {
 		}
 		
 	}
+	
+	private class LineButtonListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			hits.clear();
+			current.setCurrent(current.getCurrent().lineButton());
+			
+			// JComonent repaint
+			// control <-select-> view
+			Pages pages = model.getLast();
+			pages.requestPropertyChanged("QLine");
+		}
+		
+	}
+	
+	private class PolylineButtonListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) 
+		{
+			hits.clear();			
+			current.setCurrent(current.getCurrent().polylineButton());
+			
+			// JComonent repaint
+			// control <-select-> view
+			Pages pages = model.getLast();
+			pages.requestPropertyChanged("QPolyline");	
+		}
+		
+	}
+	
+	private class PolygonButtonListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			hits.clear();			
+			current.setCurrent(current.getCurrent().polygonButton());
+			
+			// JComonent repaint
+			// control <-select-> view
+			Pages pages = model.getLast();
+			pages.requestPropertyChanged("QPolygon");
+		}
+		
+	}
+	
 	private class MainPanelListener implements MouseListener, 
 											   MouseMotionListener {
 		@Override
@@ -100,18 +174,74 @@ public class QController {
 							 edgeColor, fillColor,
 							 isFill));					
 				}
+			} else if(cur == QState.QSTATE_ELLIPSE) { 
+				if(b == MouseEvent.BUTTON1) {
+					pages.add(new QEllipse(e.getX(), e.getY(), 
+							  0, 0, stroke, size, edgeColor, fillColor, isFill));
+				}
 			} else if(cur == QState.QSTATE_TEXT) {
 				if(b == MouseEvent.BUTTON1) {
 					String text = JOptionPane.showInputDialog("What about this?");
 					if(text != null && !text.isEmpty())
-						pages.add(new QText(e.getX(), e.getY(), text, b, size, edgeColor, fillColor));
+						pages.add(new QText(e.getX(), e.getY(),
+								  text, stroke, size, edgeColor, fillColor, isFill));
 				}
+			} else if(cur == QState.QSTATE_LINE) {
+				if(b == MouseEvent.BUTTON1) {
+					pages.add(new QLine(e.getX(), e.getY(), e.getX(), e.getY(),
+							  stroke, size, edgeColor, fillColor, isFill));
+				}
+			} else if(cur == QState.QSTATE_POLYLINE) {
+				if(b == MouseEvent.BUTTON1) {
+					ArrayList<Point> polylinePoints = new ArrayList<>();
+					polylinePoints.add(new Point(e.getX(), e.getY()));
+					// for dynamic
+					polylinePoints.add(new Point(e.getX(), e.getY()));
+
+					pages.add(new QPolyline(polylinePoints,
+							  stroke, size, edgeColor, fillColor, isFill));						
+				}
+			} else if(cur == QState.QSTATE_RENDER_POLYLINE) {
+				if(b == MouseEvent.BUTTON1) {
+					QPolyline top = (QPolyline)pages.now();
+					top.updateNow(new Point(e.getX(), e.getY()));
+					// for dynamic					
+					top.add(new Point(e.getX(), e.getY()));
+				}
+			} else if(cur == QState.QSTATE_POLYGON) {
+				if(b == MouseEvent.BUTTON1) {
+					ArrayList<Point> polygonPoints = new ArrayList<>();
+					polygonPoints.add(new Point(e.getX(), e.getY()));
+					// for dynamic
+					polygonPoints.add(new Point(e.getX(), e.getY()));
+					
+					pages.add(new QPolygon(polygonPoints,
+							  stroke, size, edgeColor, fillColor, isFill));						
+				}
+			} else if(cur == QState.QSTATE_RENDER_POLYGON) {
+				QPolygon top = (QPolygon)pages.now();
+				top.updateNow(new Point(e.getX(), e.getY()));
+				// for dynamic				
+				top.add(new Point(e.getX(), e.getY()));
 			}
-	
+			
 			// state transition
 			if(b == MouseEvent.BUTTON1) {
 				current.setCurrent(current.getCurrent().leftButton());
 			} else if(b == MouseEvent.BUTTON3) {
+				if(cur == QState.QSTATE_RENDER_POLYLINE) {
+					QPolyline top = (QPolyline)pages.now();
+					top.removeNow();
+
+					// rubbish
+					pages.requestPropertyChanged("Remove Last Point");
+				} else if(cur == QState.QSTATE_RENDER_POLYGON) {
+					QPolygon top = (QPolygon)pages.now();
+					top.removeNow();
+
+					// rubbish
+					pages.requestPropertyChanged("Remove Last Point");
+				}
 				current.setCurrent(current.getCurrent().rightButton());
 			}
 		}
@@ -119,7 +249,6 @@ public class QController {
 		@Override
 		public void mousePressed(MouseEvent event)
 		{
-			
 		}
 		
 		@Override
@@ -177,6 +306,43 @@ public class QController {
 				int newHeight = Math.abs(newY - oldY);
 				top.setX(minX); top.setY(minY);
 				top.setWidth(newWidth); top.setHeight(newHeight);
+				// notify
+				// create no new Object
+				pages.updateNow(top);
+			} else if(cur == QState.QSTATE_RENDER_ELLIPSE) {
+				// make sure down-cast safe
+				QEllipse top = (QEllipse)pages.now();
+				int newX = e.getX(), newY = e.getY();
+				int oldX = top.getp1X(), oldY = top.getp1Y();
+				int minX = Math.min(newX, oldX);
+				int minY = Math.min(newY, oldY);
+				int newWidth = Math.abs(newX - oldX);
+				int newHeight = Math.abs(newY - oldY);
+				top.setX(minX); top.setY(minY);
+				top.setWidth(newWidth); top.setHeight(newHeight);
+				// notify
+				// create no new Object
+				pages.updateNow(top);				
+			} else if(cur == QState.QSTATE_RENDER_LINE) {
+				// make sure down-cast safe
+				QLine top = (QLine)pages.now();
+				top.setp2X(e.getX());
+				top.setp2Y(e.getY());
+				
+				// notify
+				// create no new Object
+				pages.updateNow(top);
+			} else if(cur == QState.QSTATE_RENDER_POLYLINE) {
+				// make sure down-cast safe
+				QPolyline top = (QPolyline)pages.now();
+				top.updateNow(new Point(e.getX(), e.getY()));
+				// notify
+				// create no new Object
+				pages.updateNow(top);
+			} else if(cur == QState.QSTATE_RENDER_POLYGON) {
+				// make sure down-cast safe
+				QPolygon top = (QPolygon)pages.now();
+				top.updateNow(new Point(e.getX(), e.getY()));			
 				// notify
 				// create no new Object
 				pages.updateNow(top);
@@ -309,7 +475,7 @@ public class QController {
 		fillColor = DefaultSetting.fillColor;	
 		
 		size = DefaultSetting.fontSize;
-		
+				
 		// buffer
 		hits = new LinkedList<>();
 		mousePoint = new Point(0, 0);
@@ -332,9 +498,29 @@ public class QController {
 		return new RectangleButtonListener();
 	}
 	
+	public ActionListener getEllipseButtonListener()
+	{
+		return new EllipseButtonListener();
+	}
+	
 	public ActionListener getTextButtonListener()
 	{
 		return new TextButtonListener();
+	}	
+	
+	public ActionListener getLineButtonListener()
+	{
+		return new LineButtonListener();
+	}
+	
+	public ActionListener getPolylineButtonListener()
+	{
+		return new PolylineButtonListener();
+	}
+	
+	public ActionListener getPolygonButtonListener()
+	{
+		return new PolygonButtonListener();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -389,6 +575,10 @@ public class QController {
 	private int size;
 	private double stroke = 0.0;
 	private boolean isFill = false;
+	
+	// polygon and polygon line
+	// private ArrayList<Point> polygonPoints;
+	// private ArrayList<Point> polylinePoints; 
 	
 	// buffer for hitting
 	// private java.util.List<AbstractShape> hits;

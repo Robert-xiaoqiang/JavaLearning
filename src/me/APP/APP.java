@@ -37,7 +37,12 @@ public final class APP {
 		// event -> controller
 		// listener binding
 		window.bindRectangleButton(controller.getRectangleButtonListener());
+		window.bindEllipseButton(controller.getEllipseButtonListener());
 		window.bindTextButton(controller.getTextButtonListener());
+		window.bindLineButton(controller.getLineButtonListener());
+		window.bindPolylineButton(controller.getPolylineButtonListener());
+		window.bindPolygonButton(controller.getPolygonButtonListener());
+		
 		window.bindMainPanel(controller.getMainPanelListener());
 		window.bindEdgeColorPanel(controller.getEdgeColorChangedListener());
 		window.bindFillColorPanel(controller.getFillColorChangedListener());

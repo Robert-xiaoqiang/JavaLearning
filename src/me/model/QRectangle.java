@@ -15,12 +15,11 @@ public class QRectangle extends AbstractShape {
 	private static final long serialVersionUID = 1L;
 	public QRectangle(int x, int y, int width, int height, double stroke, int size, Color edgeColor, Color fillColor, boolean isFill) 
 	{
-		super(stroke, size, edgeColor, fillColor);
+		super(stroke, size, edgeColor, fillColor, isFill);
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		this.isFill = isFill;
 		this.p1 = new Point(x, y);
 	}
 

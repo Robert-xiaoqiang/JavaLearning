@@ -15,12 +15,13 @@ public abstract class AbstractShape implements IShape, Serializable {
 	private static final long serialVersionUID = 1L;
 	public abstract void translate(int deltaX, int deltaY);
 	
-	public AbstractShape(double stroke, int size, Color edgeColor, Color fillColor) 
+	public AbstractShape(double stroke, int size, Color edgeColor, Color fillColor, boolean isFill) 
 	{
 		this.stroke = stroke;
 		this.edgeColor = edgeColor;
 		this.fillColor = fillColor;
 		this.size = size;
+		this.isFill = isFill;
 	}
 
 	public void setStroke(double d)

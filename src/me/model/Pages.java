@@ -67,6 +67,7 @@ public class Pages extends ProxyPropertyNotification implements Serializable {
 	 */
 	public void updateSize(int index, int param)
 	{
+		// shapes.add(new QPolyline(shapes.get(index)));
 		shapes.get(index).setSize(param);
 		fireOnPropertyChanged("size");
 		isModified = true;

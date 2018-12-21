@@ -98,9 +98,29 @@ public class MainWindow extends JFrame {
 		functionPanel.bindRectangleButton(aListener);
 	}
 	
+	public void bindEllipseButton(ActionListener aListerner)
+	{
+		functionPanel.bindEllipseButton(aListerner);
+	}
+	
 	public void bindTextButton(ActionListener aListener)
 	{
 		functionPanel.bindTextButton(aListener);
+	}
+	
+	public void bindLineButton(ActionListener aListener)
+	{
+		functionPanel.bindLineButton(aListener);
+	}
+	
+	public void bindPolylineButton(ActionListener aListener)
+	{
+		functionPanel.bindPolylineButton(aListener);
+	}
+	
+	public void bindPolygonButton(ActionListener aListener)
+	{
+		functionPanel.bindPolygonButton(aListener);
 	}
 	
 	public <E extends MouseMotionListener & MouseListener> void bindMainPanel(E mListener)
