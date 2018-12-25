@@ -23,6 +23,15 @@ public class QRectangle extends AbstractShape {
 		this.p1 = new Point(x, y);
 	}
 
+	public QRectangle(QRectangle another)
+	{
+		super(another.stroke, another.size, another.edgeColor, another.fillColor, another.isFill);
+		this.x = another.x;
+		this.y = another.y;
+		this.width = another.width;
+		this.height = another.height;
+	}
+	
 	@Override
 	public void render(Graphics g) 
 	{

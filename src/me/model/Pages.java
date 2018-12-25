@@ -126,6 +126,30 @@ public class Pages extends ProxyPropertyNotification implements Serializable {
 		isModified = true;
 	}
 	
+	public void duplicate(int id)
+	{
+		AbstractShape shape = shapes.get(id);
+		AbstractShape temp;
+		if(shape instanceof QRectangle) {
+			temp = new QRectangle((QRectangle)shape);
+		} else if(shape instanceof QLine) {
+			temp = new QLine((QLine)shape);		
+		} else if(shape instanceof QEllipse) {
+			temp = new QEllipse((QEllipse)shape);
+		} else if(shape instanceof QText) {
+			temp = new QText((QText)shape);
+		} else if(shape instanceof QPolygon) {
+			temp = new QPolygon((QPolygon)shape);
+		} else {
+			temp = new QPolyline((QPolyline)shape);
+		}
+		temp.translate(20, 20);
+		shapes.add(temp);	
+		// notify
+		fireOnPropertyChanged("duplicate");
+		isModified = true;
+	}
+	
 	public void render(Graphics g)
 	{
 		// how about capturing

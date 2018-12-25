@@ -51,6 +51,7 @@ public final class APP {
 		window.bindStrokeSlider(controller.getStrokeSliderListener());
 		window.bindFontSizeSlider(controller.getFontSizeSliderListener());
 		window.bindDelete(controller.getDeleteListener());
+		window.bindDuplicate(controller.getDuplicateListener());
 	}
 	
 }

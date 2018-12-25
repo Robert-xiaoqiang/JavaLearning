@@ -58,7 +58,7 @@ public class QController {
 		
 	}
 	
-	private class EllipseButtonListener implements ActionListener {
+	private final class EllipseButtonListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) 
@@ -74,7 +74,7 @@ public class QController {
 		
 	}
 	
-	private class TextButtonListener implements ActionListener {
+	private final class TextButtonListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) 
@@ -90,7 +90,7 @@ public class QController {
 		
 	}
 	
-	private class LineButtonListener implements ActionListener {
+	private final class LineButtonListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e)
@@ -106,7 +106,7 @@ public class QController {
 		
 	}
 	
-	private class PolylineButtonListener implements ActionListener {
+	private final class PolylineButtonListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) 
@@ -122,7 +122,7 @@ public class QController {
 		
 	}
 	
-	private class PolygonButtonListener implements ActionListener {
+	private final class PolygonButtonListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e)
@@ -138,7 +138,7 @@ public class QController {
 		
 	}
 	
-	private class MainPanelListener implements MouseListener, 
+	private final class MainPanelListener implements MouseListener, 
 											   MouseMotionListener {
 		@Override
 		public void mouseClicked(MouseEvent e)
@@ -352,7 +352,7 @@ public class QController {
 		}
 	}
 	
-	private class EdgeColorChangedListener implements ColorChangedListener {
+	private final class EdgeColorChangedListener implements ColorChangedListener {
 		@Override
 		public void onColorChanged(Color c)
 		{
@@ -366,7 +366,7 @@ public class QController {
 		}
 	}
 	
-	private class FillColorChangedListener implements ColorChangedListener {
+	private final class FillColorChangedListener implements ColorChangedListener {
 		@Override
 		public void onColorChanged(Color c)
 		{
@@ -381,7 +381,7 @@ public class QController {
 		}
 	}
 	
-	private class EdgeButtonListener implements ActionListener {
+	private final class EdgeButtonListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
@@ -398,7 +398,7 @@ public class QController {
 		}
 	}
 	
-	private class FillButtonListener implements ActionListener {
+	private final class FillButtonListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
@@ -417,7 +417,7 @@ public class QController {
 		}
 	}
 	
-	private class StrokeSliderListener implements ChangeListener {
+	private final class StrokeSliderListener implements ChangeListener {
 		@Override
 		public void stateChanged(ChangeEvent c)
 		{
@@ -435,7 +435,7 @@ public class QController {
 		}
 	}
 	
-	private class FontSizeSliderListener implements ChangeListener {
+	private final class FontSizeSliderListener implements ChangeListener {
 		@Override
 		public void stateChanged(ChangeEvent c)
 		{
@@ -454,7 +454,7 @@ public class QController {
 		}
 	}
 	
-	private class DeleteListener implements ActionListener {
+	private final class DeleteListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
@@ -466,6 +466,16 @@ public class QController {
 		}
 	}
 	
+	private final class DuplicateListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			if(!hits.isEmpty()) {
+				Pages pages = model.getLast();
+				pages.duplicate(hits.get(0));
+			}
+		}
+	}
 	
 	public QController() 
 	{
@@ -563,6 +573,11 @@ public class QController {
 	public ActionListener getDeleteListener()
 	{
 		return new DeleteListener();
+	}
+	
+	public ActionListener getDuplicateListener()
+	{
+		return new DuplicateListener();
 	}
 	
 	// automata
