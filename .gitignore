@@ -1,0 +1,7 @@
+/.settings/
+/bin/
+/resource/
+*.class
+*.classpath
+*.project
+*.cad
