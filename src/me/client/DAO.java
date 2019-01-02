@@ -29,7 +29,7 @@ public class DAO implements PostMessageListener, BroadcastMessageListener {
 	@Override
 	public void receivedBroadcastMessage(BroadcastMessage bMsg)
 	{
-		;;;;
+		mdModel.setMD(bMsg.getModel().getMD());
 	}
 	
 	public MDModel getModel()

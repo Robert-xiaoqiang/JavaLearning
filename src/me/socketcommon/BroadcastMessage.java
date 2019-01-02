@@ -54,13 +54,13 @@ public class BroadcastMessage implements IMessage {
 	}	
 	
 	// register call back
-	public synchronized void addPostMessageListener(BroadcastMessageListener broadcastMessageListener)
+	public synchronized void addBroadcastMessageListener(BroadcastMessageListener broadcastMessageListener)
 	{
 		broadcastMessageListeners.add(broadcastMessageListener);
 	}
 	
 	// remove ** Listener
-	public synchronized void removePostMessageListener(BroadcastMessageListener broadcastMessageListener)
+	public synchronized void removeBroadcastMessageListener(BroadcastMessageListener broadcastMessageListener)
 	{
 		broadcastMessageListeners.remove(broadcastMessageListener);
 	}
