@@ -1,9 +1,12 @@
 package me.server;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.PushbackInputStream;
 import java.lang.instrument.Instrumentation;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -19,17 +22,25 @@ public class HandleClientTask implements Runnable {
 	
 	// non-static inner class
 	private class ClientSendTask implements Runnable {
-		public ClientSendTask(OutputStream os) 
+		private volatile boolean running = false;
+		
+		public ClientSendTask(ObjectOutputStream oos) 
 		{
-			this.os = os;
+			this.oos = oos;
+			running = true;
+		}
+		
+		public void terminate()
+		{
+			running = false;
 		}
 		
 		@Override
 		public void run()
 		{
 			synchronized(sendQueue) {
-				while(true) { 
-					if(!sendQueue.isEmpty()) {
+				while(running) { 
+					if(sendQueue.isEmpty()) {
 						try {
 							/**
 							 * @note
@@ -38,7 +49,7 @@ public class HandleClientTask implements Runnable {
 							 * wait for outer object
 							 * !!!  
 							 */
-							HandleClientTask.this.wait();
+							sendQueue.wait();
 							// release synchronized
 						} catch (InterruptedException e) {
 							e.printStackTrace();
@@ -47,7 +58,7 @@ public class HandleClientTask implements Runnable {
 						Sendable s = sendQueue.poll();
 						try {
 							// just send one item
-							s.send(os);
+							s.send(oos);
 						} catch (ClassNotFoundException | IOException e) {
 							e.printStackTrace();
 						}
@@ -56,33 +67,48 @@ public class HandleClientTask implements Runnable {
 			}
 		}
 		
-		private OutputStream os;
+		private ObjectOutputStream oos;
 	}
 	
 	public HandleClientTask(Socket socket, TCPServer server, DAO dao) throws IOException 
 	{
 		this.socket = socket;
 		
+		sendQueue = new LinkedList<>();
 		/**
 		 *  new send thread
 		 */
-		sendThread = new Thread(new ClientSendTask(this.socket.getOutputStream()));
+		sendTask = new ClientSendTask(new ObjectOutputStream(this.socket.getOutputStream()));
+		sendThread = new Thread(sendTask);
 		sendThread.start();
-		
-		sendQueue = new LinkedList<>();
-		curMessageType = null;
-		
+
 		/**
 		 * dao from main thread
 		 * make sure mutual exclusion
 		 */
-		this.server = server;
-		this.dao = dao;
+		this.server = server; 			// bind server
+		this.dao = dao;					// bind DAO
+		curMessageType = null;
 		postMessage = new PostMessage();
 		postMessage.addPostMessageListener(dao);
 		
 		broadcastMessage = new BroadcastMessage();
-		broadcastMessage.addPostMessageListener(dao);
+		broadcastMessage.addBroadcastMessageListener(dao);
+		
+		running = true;
+	}
+	
+	public void terminate() throws InterruptedException
+	{
+		running = false;
+		/**
+		 * request exit
+		 */
+		sendTask.terminate();
+		/**
+		 * wait for exiting
+		 */
+		sendThread.join();
 	}
 	
 	/**
@@ -98,36 +124,49 @@ public class HandleClientTask implements Runnable {
 			 * finite loop
 			 * due to exception mechanism
 			 */
-			while(true) {
+			BufferedInputStream bii = new BufferedInputStream(is);
+			ObjectInputStream ois = new ObjectInputStream(bii);
+			while(running) {
 				// blocking most time
-				ObjectInputStream ois = new ObjectInputStream(is);
+//				bii.mark(1);
+//				int byte1 = (int)bii.read();
+//				bii.reset();
+//				
+//				if(byte1 == -1) {
+//					try {
+//						terminate();
+//					} catch(InterruptedException ie) {
+//						ie.printStackTrace();
+//					}
+//					break;
+//				}
+								
 				curMessageType = (MessageType)ois.readObject();
 				if(curMessageType == MessageType.POST_MODEL) {
-					postMessage.read(is);
+					postMessage.read(ois);
 					/**
 					 * many threads
 					 */
-					synchronized(this.dao) { 
-						postMessage.handle();
-					}
+					postMessage.handle();
 					/**
 					 * many threads
 					 */
+					System.out.println("handle over a post message");
 					synchronized(server) {
-						server.broadcast(curMessageType, postMessage);
+						server.broadcast(this, MessageType.BROAD_CAST_MODEL, new BroadcastMessage(postMessage));
 					}
 				} else if(curMessageType == MessageType.BROAD_CAST_MODEL) {
-					broadcastMessage.read(is);
-					synchronized(this.dao) {
-						broadcastMessage.handle();
-					}
-					synchronized(server) {
-						server.broadcast(curMessageType, broadcastMessage);
-					}
+					broadcastMessage.read(ois);
+					/**
+					 * many threads
+					 */
+					broadcastMessage.handle();
 				}
 			}
 		} catch(ClassNotFoundException | IOException ioe) {
-			ioe.printStackTrace();
+			// ioe.printStackTrace();
+			// exit dirty
+			;;;;
 		}
 	}
 	
@@ -137,8 +176,8 @@ public class HandleClientTask implements Runnable {
 			sendQueue.offer(s);
 			// here is OK???
 			// notifyAll();
+			sendQueue.notifyAll();
 		}
-		notifyAll();
 		/**
 		 * awake send thread
 		 * typical producer/consumer
@@ -150,6 +189,7 @@ public class HandleClientTask implements Runnable {
 	private LinkedList<Sendable> sendQueue;
 	
 	private Thread sendThread;
+	private ClientSendTask sendTask;
 	private Socket socket;
 	
 	// make sure mutual
@@ -157,6 +197,7 @@ public class HandleClientTask implements Runnable {
 	private TCPServer server;
 	private DAO dao;
 
+	private volatile boolean running = false;
 	private MessageType curMessageType;
 	private PostMessage postMessage;
 	private BroadcastMessage broadcastMessage;

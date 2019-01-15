@@ -1,38 +1,51 @@
 package me.socketcommon;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-
-import me.model.MDModel;
 
 public class PostMessage implements IMessage {
 
 	public PostMessage() 
 	{
 		postMessageListeners = new ArrayList<>();
-		model = null;
+		mdText = null;
 	}
+	
 	/**
 	 * copy model
 	 * do not copy listener
 	 * @param p
 	 */
-	public PostMessage(PostMessage p)
+	public PostMessage(PostMessage another)
 	{
 		postMessageListeners = new ArrayList<>();
-		this.model = new MDModel(p.model);
+		this.mdText = new String(another.mdText);
+	}
+	
+	public PostMessage(BroadcastMessage broadcastMessage)
+	{
+		postMessageListeners = new ArrayList<>();
+		this.mdText = new String(broadcastMessage.getMDText());		
+	}
+	
+	public PostMessage(String mdText)
+	{
+		postMessageListeners = new ArrayList<>();
+		this.mdText = new String(mdText);
 	}
 	
 	@Override
-	public void read(InputStream in)
+	public void read(ObjectInputStream ois)
 	{
 		try {
-			ObjectInputStream ois = new ObjectInputStream(in);
-			model = (MDModel)ois.readObject();
+			mdText = (String)ois.readObject();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		} catch(ClassNotFoundException cnfe) {
@@ -54,16 +67,23 @@ public class PostMessage implements IMessage {
 	}
 	
 	@Override
-	public void send(OutputStream os) throws IOException, ClassNotFoundException
+	public void send(ObjectOutputStream oos) throws IOException, ClassNotFoundException
 	{
-		ObjectOutputStream ois = new ObjectOutputStream(os);
-		ois.writeObject(this);
+		oos.writeObject(mdText);
 	}
 
-	
-	public MDModel getModel()
+	@Override
+	public void sendBySocketChannel(SocketChannel socketChannel) throws IOException
 	{
-		return model;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		oos.writeObject(mdText);
+		socketChannel.write(ByteBuffer.wrap(baos.toByteArray()));
+	}
+	
+	public String getMDText()
+	{
+		return mdText;
 	}
 	
 	
@@ -80,5 +100,5 @@ public class PostMessage implements IMessage {
 	}
 	
 	private ArrayList<PostMessageListener> postMessageListeners;
-	private MDModel model;
+	private String mdText;
 }

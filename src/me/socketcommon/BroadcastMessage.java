@@ -1,28 +1,46 @@
 package me.socketcommon;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-
-import me.model.MDModel;
 
 public class BroadcastMessage implements IMessage {
 
 	public BroadcastMessage() 
 	{
 		broadcastMessageListeners = new ArrayList<>();
-		model = null;
+		mdText = null;
+	}
+	
+	public BroadcastMessage(BroadcastMessage another)
+	{
+		broadcastMessageListeners = new ArrayList<>();
+		mdText = new String(another.mdText);
+	}
+	
+	public BroadcastMessage(PostMessage postMessage)
+	{
+		broadcastMessageListeners = new ArrayList<>();
+		mdText = new String(postMessage.getMDText());
+	}
+	
+	public BroadcastMessage(String mdText)
+	{
+		broadcastMessageListeners = new ArrayList<>();
+		mdText = new String(mdText);
 	}
 	
 	@Override
-	public void read(InputStream in)
+	public void read(ObjectInputStream ois)
 	{
 		try {
-			ObjectInputStream ois = new ObjectInputStream(in);
-			model = (MDModel)ois.readObject();
+			mdText = (String)ois.readObject();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		} catch(ClassNotFoundException cnfe) {
@@ -36,36 +54,44 @@ public class BroadcastMessage implements IMessage {
 		// * listener may be changed outer object
 		synchronized(this) {
 			for(final BroadcastMessageListener pml : broadcastMessageListeners) {
-				new Thread(() -> pml.receivedBroadcastMessage(this)).start();
+				new Thread(() -> pml.receivedBroadcastMessage(new BroadcastMessage(this))).start();
 			}			
 		}
 	}
 	
 	@Override
-	public void send(OutputStream os) throws IOException, ClassNotFoundException
+	public void send(ObjectOutputStream oos) throws IOException, ClassNotFoundException
 	{
-		ObjectOutputStream ois = new ObjectOutputStream(os);
-		ois.writeObject(this);
+		oos.writeObject(mdText);
 	}	
 	
-	public MDModel getModel()
+	@Override
+	public void sendBySocketChannel(SocketChannel socketChannel) throws IOException
 	{
-		return model;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		oos.writeObject(mdText);
+		socketChannel.write(ByteBuffer.wrap(baos.toByteArray()));
+	}
+	
+	public String getMDText()
+	{
+		return mdText;
 	}	
 	
 	// register call back
-	public synchronized void addPostMessageListener(BroadcastMessageListener broadcastMessageListener)
+	public synchronized void addBroadcastMessageListener(BroadcastMessageListener broadcastMessageListener)
 	{
 		broadcastMessageListeners.add(broadcastMessageListener);
 	}
 	
 	// remove ** Listener
-	public synchronized void removePostMessageListener(BroadcastMessageListener broadcastMessageListener)
+	public synchronized void removeBroadcastMessageListener(BroadcastMessageListener broadcastMessageListener)
 	{
 		broadcastMessageListeners.remove(broadcastMessageListener);
 	}
 	
 	private ArrayList<BroadcastMessageListener> broadcastMessageListeners;
-	private MDModel model;
+	private String mdText;
 
 }

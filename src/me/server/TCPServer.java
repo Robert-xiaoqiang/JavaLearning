@@ -50,6 +50,7 @@ public class TCPServer implements AutoCloseable {
 				clientsMap.put(connectSocket, clientHandleThread);	
 			}
 			clientHandleThread.start();
+			System.out.printf("ip: %s, port: %d\n", connectSocket.getInetAddress().getHostAddress(), connectSocket.getPort());
 		}
 	}
 	
@@ -58,7 +59,7 @@ public class TCPServer implements AutoCloseable {
 	 * clients handle task may be
 	 * call it in many threads
 	 */
-	public synchronized void broadcast(final Sendable type, final Sendable message)
+	public synchronized void broadcast(final HandleClientTask from, final Sendable type, final Sendable message)
 	{
 		/**
 		 * !!!
@@ -69,7 +70,8 @@ public class TCPServer implements AutoCloseable {
 		// copy the list
 		final ArrayList<HandleClientTask> copyList = new ArrayList<>();
 		for(HandleClientTask h : clientsTask) {
-			copyList.add(h);
+			if(h != from)
+				copyList.add(h);
 		}
 		
 		// temporary sending thread
@@ -85,8 +87,19 @@ public class TCPServer implements AutoCloseable {
 	@Override
 	public void close() throws IOException, InterruptedException
 	{
+		// close listen socket
 		listenSocket.close();
+		for(HandleClientTask h : clientsTask) {
+			/**
+			 * exit send thread
+			 * request exit receive thread
+			 */
+			h.terminate();
+		}
 		for(Map.Entry<Socket, Thread> entry : clientsMap.entrySet()) {
+			/**
+			 * exit receive thread
+			 */
 			entry.getValue().join();
 			entry.getKey().close();
 		}
